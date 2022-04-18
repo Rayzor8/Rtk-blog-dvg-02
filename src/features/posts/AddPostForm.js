@@ -1,71 +1,92 @@
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-
-import { postAdded } from "./postsSlice";
-import { selectAllUsers } from "../users/usersSlice";
+import { useDispatch, useSelector } from 'react-redux';
+import { Form, Input, Select, Button } from 'antd';
+import { postAdded } from './postsSlice';
+import { selectAllUsers } from '../users/usersSlice';
 
 const AddPostForm = () => {
-    const dispatch = useDispatch()
+   const dispatch = useDispatch();
+   const { Option } = Select;
 
-    const [title, setTitle] = useState('')
-    const [content, setContent] = useState('')
-    const [userId, setUserId] = useState('')
 
-    const users = useSelector(selectAllUsers)
+   const users = useSelector(selectAllUsers);
 
-    const onTitleChanged = e => setTitle(e.target.value)
-    const onContentChanged = e => setContent(e.target.value)
-    const onAuthorChanged = e => setUserId(e.target.value)
 
-    const onSavePostClicked = () => {
-        if (title && content) {
-            dispatch(
-                postAdded(title, content, userId)
-            )
-            setTitle('')
-            setContent('')
-        }
-    }
+   const usersOptions = users.map((user) => (
+      <Option key={user.id} value={user.id}>
+         {user.name}
+      </Option>
+   ));
 
-    const canSave = Boolean(title) && Boolean(content) && Boolean(userId)
+   const onFinish = (values) => {
+      console.log(values)
+      dispatch(postAdded(values.title, values.content, values.userId));
+   };
 
-    const usersOptions = users.map(user => (
-        <option key={user.id} value={user.id}>
-            {user.name}
-        </option>
-    ))
+   const onFinishFailed = (errorInfo) => {
+      console.log('Failed:', errorInfo);
+   };
 
-    return (
-        <section>
-            <h2>Add a New Post</h2>
-            <form>
-                <label htmlFor="postTitle">Post Title:</label>
-                <input
-                    type="text"
-                    id="postTitle"
-                    name="postTitle"
-                    value={title}
-                    onChange={onTitleChanged}
-                />
-                <label htmlFor="postAuthor">Author:</label>
-                <select id="postAuthor" value={userId} onChange={onAuthorChanged}>
-                    <option value=""></option>
-                    {usersOptions}
-                </select>
-                <label htmlFor="postContent">Content:</label>
-                <textarea
-                    id="postContent"
-                    name="postContent"
-                    value={content}
-                    onChange={onContentChanged}
-                />
-                <button
-                    type="button"
-                    onClick={onSavePostClicked}
-                    disabled={!canSave}
-                >Save Post</button>
-            </form>
-        </section>
-    )
-}
-export default AddPostForm
+   const layout = {
+      labelCol: { span: 6 },
+      wrapperCol: { span: 12 },
+   };
+
+   return (
+      <section>
+         <h2>Add a New Post</h2>
+         <Form
+            {...layout}
+            initialValues={{
+               remember: true,
+            }}
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+         >
+            <Form.Item
+               label="Post Title:"
+               name="title"
+               rules={[
+                  {
+                     required: true,
+                     message: 'Please input your Post Title!',
+                  },
+               ]}
+            >
+               <Input placeholder="Input Post Title" />
+            </Form.Item>
+            <Form.Item
+               label="Author:"
+               name="userId"
+               rules={[
+                  {
+                     required: true,
+                     message: 'Please input your Post Title!',
+                  },
+               ]}
+            >
+               <Select>{usersOptions}</Select>
+            </Form.Item>
+
+            <Form.Item
+               label="Post Content:"
+               name="content"
+               rules={[
+                  {
+                     required: true,
+                     message: 'Please input your Post Title!',
+                  },
+               ]}
+            >
+               <Input.TextArea placeholder="Input Post Content" />
+            </Form.Item>
+
+            <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 6 }}>
+               <Button type="primary" htmlType="submit">
+                  Submit
+               </Button>
+            </Form.Item>
+         </Form>
+      </section>
+   );
+};
+export default AddPostForm;
